@@ -1,0 +1,3 @@
+﻿  tempTest.cpp
+D:\AIZ\大学文件\学习\数据结构与算法专题实践\实践\Experiment1\Experiment4\tempTest.cpp(25,12): warning C4244: “参数”: 从“time_t”转换到“unsigned int”，可能丢失数据
+  Experiment4.vcxproj -> D:\AIZ\大学文件\学习\数据结构与算法专题实践\实践\Experiment1\x64\Debug\Experiment4.exe
