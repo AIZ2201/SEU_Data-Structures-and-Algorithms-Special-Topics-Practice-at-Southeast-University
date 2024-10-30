@@ -8,6 +8,8 @@ Experiment1文件夹内是实验代码，前两个（Experiment1、Experiment2�
 
 tempP文件夹是测试用代码，用于测试和验证一些代码
 
-有部分.ipch文件大于50MB因此无法上传，可能导致VisualStudio无法直接在此文件目录下工作
+~有部分.ipch文件大于50MB因此无法上传，可能导致VisualStudio无法直接在此文件目录下工作~
+
+现在使用lfs插件进行了50MB+文件的上传，但不清楚是否影响项目clone，也不清楚是否能用VS直接在此文件目录下工作
 
 可自行创建新的VS项目并复制.cpp文件中的代码来运行
