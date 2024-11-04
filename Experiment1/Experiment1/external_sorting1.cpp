@@ -5,6 +5,8 @@
 #include <string>
 using namespace std;
 
+int disk_action_amount = 0;
+
 void data_generation(int amount, string fileName)
 {
 	srand(time(NULL));
@@ -89,6 +91,8 @@ void segmentInitial(string inFileName, int segmentSize, queue<vector<int>>& disk
 
 vector<int> memoryInput(vector<int>& disk, int inputBufferSize)
 {
+	disk_action_amount++;
+
 	int temp;
 	vector<int> inputBuffer;
 
@@ -104,6 +108,8 @@ vector<int> memoryInput(vector<int>& disk, int inputBufferSize)
 
 void memoryOutput(vector<int>& tempDisk, vector<int>& outputBuffer)
 {
+	disk_action_amount++;
+
 	tempDisk.insert(tempDisk.end(), outputBuffer.begin(), outputBuffer.end());
 
 	outputBuffer.clear();
@@ -208,7 +214,9 @@ int main()
 	int outputBufferSize = 20;
 	int inputBufferSize = 10;
 
-	data_generation(N, inFileName);
+	// data_generation(N, inFileName);
 
 	external_sort(inFileName, inputBufferSize, disk, outFileName, outputBufferSize);
+
+	cout << "Disk action amount: " << disk_action_amount << endl;
 }

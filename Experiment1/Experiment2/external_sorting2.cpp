@@ -14,6 +14,10 @@ thread outputThread2;
 mutex inputLock;
 mutex outputLock;
 
+int disk_action_amount_pre = 0;
+int disk_action_amount_run = 0;
+int disk_action_amount_sum = 0;
+
 struct Compare {
 	bool operator()(const vector<int>& a, const vector<int>& b) {
 		return a.size() > b.size(); // 元素少的在前（先被merge）
@@ -55,6 +59,8 @@ void insertionSort(vector<int>& array)
 
 vector<int> memoryInput(vector<int>& disk, int inputBufferSize)
 {
+	disk_action_amount_sum++;
+
 	int temp;
 	vector<int> inputBuffer;
 
@@ -72,6 +78,8 @@ void memoryInputT(vector<int>& disk, int inputBufferSize, vector<int>& inputBuff
 {
 	inputLock.lock();
 
+	disk_action_amount_sum++;
+
 	int temp;
 
 	while (!disk.empty() && inputBuffer.size() < inputBufferSize)
@@ -86,6 +94,8 @@ void memoryInputT(vector<int>& disk, int inputBufferSize, vector<int>& inputBuff
 
 void memoryOutput(vector<int>& tempDisk, vector<int>& outputBuffer)
 {
+	disk_action_amount_sum++;
+
 	tempDisk.insert(tempDisk.end(), outputBuffer.begin(), outputBuffer.end());
 
 	outputBuffer.clear();
@@ -94,6 +104,8 @@ void memoryOutput(vector<int>& tempDisk, vector<int>& outputBuffer)
 void memoryOutputT(vector<int>& tempDisk, vector<int>& outputBuffer)
 {
 	outputLock.lock();
+
+	disk_action_amount_sum++;
 
 	tempDisk.insert(tempDisk.end(), outputBuffer.begin(), outputBuffer.end());
 
@@ -105,6 +117,8 @@ void memoryOutputT(vector<int>& tempDisk, vector<int>& outputBuffer)
 void memoryOutputTT(priority_queue<vector<int>, vector<vector<int>>, Compare>& disk, vector<int>& tempDisk, vector<int>& outputBuffer)
 {
 	outputLock.lock();
+
+	disk_action_amount_sum++;
 
 	tempDisk.insert(tempDisk.end(), outputBuffer.begin(), outputBuffer.end());
 
@@ -483,9 +497,15 @@ vector<int> EXT_merge_sort(vector<int>& tempDisk1, vector<int>& tempDisk2, int i
 		while (outputBuffer.size() < outputBufferSize)
 		{
 			if (!tempDisk1.empty() && inputBuffer1.empty())
+			{
+				disk_action_amount_run++;
 				inputBuffer1 = memoryInput(tempDisk1, inputBufferSize);
+			}
 			if (!tempDisk2.empty() && inputBuffer2.empty())
+			{
+				disk_action_amount_run++;
 				inputBuffer2 = memoryInput(tempDisk2, inputBufferSize);
+			}
 
 			if (inputBuffer1.empty())
 			{
@@ -518,6 +538,7 @@ vector<int> EXT_merge_sort(vector<int>& tempDisk1, vector<int>& tempDisk2, int i
 			}
 		}
 
+		disk_action_amount_run++;
 		memoryOutput(outputDisk, outputBuffer);
 	}
 
@@ -579,7 +600,13 @@ int main()
 	int outputBufferSize = 20;
 	int inputBufferSize = 10;
 
-	data_generation(N, inFileName);
+	// data_generation(N, inFileName);
 
 	external_sort(inFileName, inputBufferSize, disk, outFileName, outputBufferSize);
+
+	disk_action_amount_pre = disk_action_amount_sum - disk_action_amount_run;
+
+	cout << "Disk action amount sum: " << disk_action_amount_sum << endl;
+	cout << "Disk pre action amount : " << disk_action_amount_pre << endl;
+	cout << "Disk run action amount : " << disk_action_amount_run << endl;
 }
