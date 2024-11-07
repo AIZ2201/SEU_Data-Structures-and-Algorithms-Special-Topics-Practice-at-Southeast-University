@@ -15,16 +15,19 @@ thread outputThread2;
 mutex inputLock;
 mutex outputLock;
 
+// performance分析用变量
 int disk_action_amount_pre = 0;
 int disk_action_amount_run = 0;
 int disk_action_amount_sum = 0;
 
+// 定义优先队列的排序方式——按vector.size()排序
 struct Compare {
 	bool operator()(const vector<int>& a, const vector<int>& b) {
 		return a.size() > b.size(); // 元素少的在前（先被merge）
 	}
 };
 
+// 随机数生成,amount为生成的数量,范围在函数内被直接给出
 void data_generation(int amount, string fileName)
 {
 	srand(time(NULL));
@@ -42,6 +45,7 @@ void data_generation(int amount, string fileName)
 	fileOut.close();
 }
 
+// 简单的插排函数
 void insertionSort(vector<int>& array)
 {
 	for (int i = 1; i < array.size(); i++)
@@ -58,6 +62,7 @@ void insertionSort(vector<int>& array)
 	}
 }
 
+// 模拟向内存输入_串行模式
 vector<int> memoryInput(vector<int>& disk, int inputBufferSize)
 {
 	disk_action_amount_sum++;
@@ -75,6 +80,7 @@ vector<int> memoryInput(vector<int>& disk, int inputBufferSize)
 	return inputBuffer;
 }
 
+// 模拟向内存输入_多线程并行模式
 void memoryInputT(vector<int>& disk, int inputBufferSize, vector<int>& inputBuffer)
 {
 	inputLock.lock();
@@ -93,6 +99,7 @@ void memoryInputT(vector<int>& disk, int inputBufferSize, vector<int>& inputBuff
 	inputLock.unlock();
 }
 
+// 模拟内存向外输出_串行模式
 void memoryOutput(vector<int>& tempDisk, vector<int>& outputBuffer)
 {
 	disk_action_amount_sum++;
@@ -102,6 +109,7 @@ void memoryOutput(vector<int>& tempDisk, vector<int>& outputBuffer)
 	outputBuffer.clear();
 }
 
+// 模拟内存向外输出_多线程并行模式
 void memoryOutputT(vector<int>& tempDisk, vector<int>& outputBuffer)
 {
 	outputLock.lock();
@@ -115,6 +123,7 @@ void memoryOutputT(vector<int>& tempDisk, vector<int>& outputBuffer)
 	outputLock.unlock();
 }
 
+// 模拟内存向外输出_多线程并行模式_run顺串插入时用
 void memoryOutputTT(priority_queue<vector<int>, vector<vector<int>>, Compare>& disk, vector<int>& tempDisk, vector<int>& outputBuffer)
 {
 	outputLock.lock();
@@ -138,10 +147,24 @@ void loserTreeInitial(int* loserTree, bool* loserTreeStatus, int N)
 	// int* winnerTree = new int[N / 2]; // 胜者索引
 	bool* statusCopy = new bool[N]; // 备份叶节点Status
 
+	int layer = 0;
+	int N_copy = N;
+	while (N_copy != 1)
+	{
+		N_copy /= 2;
+		layer++;
+	}
+	layer--;
+
 	for (int i = N / 2; i < N; i++)
 	{
 		statusCopy[i] = loserTreeStatus[i];
 		loserTreeStatus[i] = false;
+	}
+
+	for (int i = 0; i < N / 2; i++)
+	{
+		loserTree[i] = 0;
 	}
 
 	for (int i = N / 2; i < N; i++)
@@ -152,7 +175,7 @@ void loserTreeInitial(int* loserTree, bool* loserTreeStatus, int N)
 		else
 			break;
 
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < layer; i++)
 		{
 			int parent = tempWinner / 2; // 和下面的循环一起算出第i+1次操作时相应的败者索引
 
@@ -254,6 +277,41 @@ void loserTreeInitial(int* loserTree, bool* loserTreeStatus, int N)
 	//}
 }
 
+// 败者树更新函数
+void loserTreeUp(int* loserTree, bool* loserTreeStatus, int layer)
+{
+	layer--;
+
+	// 更新败者树
+	int tempWinner = loserTree[0];
+
+	for (int i = 0; i < layer; i++) {
+		int parent = tempWinner / 2;
+
+		for (int j = 0; j < i; j++) {
+			parent /= 2;
+		}
+
+		if (loserTreeStatus[loserTree[parent]] == false) {
+			if (loserTreeStatus[tempWinner] == false) {
+				// 不用操作
+			}
+			else {
+				// tempWinner自动上升，也不用操作
+			}
+		}
+		else if (loserTree[tempWinner] > loserTree[loserTree[parent]] || loserTreeStatus[tempWinner] == false) {
+			// loser更新
+			int temp = tempWinner;
+			tempWinner = loserTree[parent];
+			loserTree[parent] = temp;
+		}
+	}
+
+	loserTree[0] = tempWinner;
+}
+
+// 顺串初始化
 void segmentInitial(string inFileName, int inputBufferSize, int outputBufferSize, priority_queue<vector<int>, vector<vector<int>>, Compare>& disk, string outFileName) {
 	ifstream fileIn(inFileName);
 	vector<int> segment;
@@ -267,6 +325,7 @@ void segmentInitial(string inFileName, int inputBufferSize, int outputBufferSize
 
 	// 败者树的初始化
 	const int N = 16; // 败者树的大小
+	const int layer = 4; // 败者树的层数
 	int loserTree[N] = { 0 }; // 败者树
 	int winnerTree[N / 2] = { 0 }; // 胜者索引
 	bool loserTreeStatus[N] = { };
@@ -289,38 +348,7 @@ void segmentInitial(string inFileName, int inputBufferSize, int outputBufferSize
 	}
 
 	// 败者树初始化
-	for (int i = 4; i < 8; i++) {
-		if (loserTree[2 * i] > loserTree[2 * i + 1]) {
-			loserTree[i] = 2 * i;
-			winnerTree[i] = 2 * i + 1;
-		}
-		else {
-			loserTree[i] = 2 * i + 1;
-			winnerTree[i] = 2 * i;
-		}
-	}
-
-	for (int i = 2; i < 4; i++) {
-		if (loserTree[winnerTree[2 * i]] > loserTree[winnerTree[2 * i + 1]]) {
-			loserTree[i] = winnerTree[2 * i];
-			winnerTree[i] = winnerTree[2 * i + 1];
-		}
-		else {
-			loserTree[i] = winnerTree[2 * i + 1];
-			winnerTree[i] = winnerTree[2 * i];
-		}
-	}
-
-	if (loserTree[winnerTree[2]] > loserTree[winnerTree[3]]) {
-		loserTree[1] = winnerTree[2];
-		winnerTree[1] = winnerTree[3];
-		loserTree[0] = winnerTree[3];
-	}
-	else {
-		loserTree[1] = winnerTree[3];
-		winnerTree[1] = winnerTree[2];
-		loserTree[0] = winnerTree[2];
-	}
+	loserTreeInitial(loserTree, loserTreeStatus, N);
 
 	outputThread2 = thread(memoryOutputT, ref(run), ref(outputBuffer2));
 
@@ -384,7 +412,7 @@ void segmentInitial(string inFileName, int inputBufferSize, int outputBufferSize
 			}
 		}
 
-		// 更新败者树
+		// 判断是否需要锁定节点
 		if (loserTree[loserTree[0]] < winner) {
 			loserTreeStatus[loserTree[0]] = false;
 
@@ -412,67 +440,13 @@ void segmentInitial(string inFileName, int inputBufferSize, int outputBufferSize
 					}
 
 					// 败者树初始化
-					for (int i = 4; i < 8; i++) {
-						if (loserTree[2 * i] > loserTree[2 * i + 1]) {
-							loserTree[i] = 2 * i;
-							winnerTree[i] = 2 * i + 1;
-						}
-						else {
-							loserTree[i] = 2 * i + 1;
-							winnerTree[i] = 2 * i;
-						}
-					}
-
-					for (int i = 2; i < 4; i++) {
-						if (loserTree[winnerTree[2 * i]] > loserTree[winnerTree[2 * i + 1]]) {
-							loserTree[i] = winnerTree[2 * i];
-							winnerTree[i] = winnerTree[2 * i + 1];
-						}
-						else {
-							loserTree[i] = winnerTree[2 * i + 1];
-							winnerTree[i] = winnerTree[2 * i];
-						}
-					}
-
-					if (loserTree[winnerTree[2]] > loserTree[winnerTree[3]]) {
-						loserTree[1] = winnerTree[2];
-						winnerTree[1] = winnerTree[3];
-						loserTree[0] = winnerTree[3];
-					}
-					else {
-						loserTree[1] = winnerTree[3];
-						winnerTree[1] = winnerTree[2];
-						loserTree[0] = winnerTree[2];
-					}
+					loserTreeInitial(loserTree, loserTreeStatus, N);
 				}
 			}
 		}
-		int tempWinner = loserTree[0];
 
-		for (int i = 0; i < 3; i++) {
-			int parent = tempWinner / 2;
-
-			for (int j = 0; j < i; j++) {
-				parent /= 2;
-			}
-
-			if (loserTreeStatus[loserTree[parent]] == false) {
-				if (loserTreeStatus[tempWinner] == false) {
-					// 不用操作
-				}
-				else {
-					// tempWinner自动上升，也不用操作
-				}
-			}
-			else if (loserTree[tempWinner] > loserTree[loserTree[parent]] || loserTreeStatus[tempWinner] == false) {
-				// loser更新
-				int temp = tempWinner;
-				tempWinner = loserTree[parent];
-				loserTree[parent] = temp;
-			}
-		}
-
-		loserTree[0] = tempWinner;
+		// 败者树更新
+		loserTreeUp(loserTree, loserTreeStatus, layer);
 	}
 
 	// 所有数全部读入，处理最后的outputBuffer、run和败者树中剩余的数
@@ -508,46 +482,7 @@ void segmentInitial(string inFileName, int inputBufferSize, int outputBufferSize
 	}
 
 	// 败者树初始化
-	for (int i = 4; i < 8; i++)
-	{
-		if (loserTree[2 * i] > loserTree[2 * i + 1])
-		{
-			loserTree[i] = 2 * i;
-			winnerTree[i] = 2 * i + 1;
-		}
-		else
-		{
-			loserTree[i] = 2 * i + 1;
-			winnerTree[i] = 2 * i;
-		}
-	}
-
-	for (int i = 2; i < 4; i++)
-	{
-		if (loserTree[winnerTree[2 * i]] > loserTree[winnerTree[2 * i + 1]])
-		{
-			loserTree[i] = winnerTree[2 * i];
-			winnerTree[i] = winnerTree[2 * i + 1];
-		}
-		else
-		{
-			loserTree[i] = winnerTree[2 * i + 1];
-			winnerTree[i] = winnerTree[2 * i];
-		}
-	}
-
-	if (loserTree[winnerTree[2]] > loserTree[winnerTree[3]])
-	{
-		loserTree[1] = winnerTree[2];
-		winnerTree[1] = winnerTree[3];
-		loserTree[0] = winnerTree[3];
-	}
-	else
-	{
-		loserTree[1] = winnerTree[3];
-		winnerTree[1] = winnerTree[2];
-		loserTree[0] = winnerTree[2];
-	}
+	loserTreeInitial(loserTree, loserTreeStatus, N);
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -563,38 +498,7 @@ void segmentInitial(string inFileName, int inputBufferSize, int outputBufferSize
 		}
 		loserTree[loserTree[0]] = 1001;// 模拟最大值+1
 
-		int tempWinner = loserTree[0];
-
-		for (int i = 0; i < 3; i++)
-		{
-			int parent = tempWinner / 2;
-
-			for (int j = 0; j < i; j++)
-			{
-				parent /= 2;
-			}
-
-			if (loserTreeStatus[loserTree[parent]] == false)
-			{
-				if (loserTreeStatus[tempWinner] == false)
-				{
-					// 不用操作
-				}
-				else
-				{
-					// tempWinner自动上升，也不用操作
-				}
-			}
-			else if (loserTree[tempWinner] > loserTree[loserTree[parent]] || loserTreeStatus[tempWinner] == false)
-			{
-				// loser更新
-				int temp = tempWinner;
-				tempWinner = loserTree[parent];
-				loserTree[parent] = temp;
-			}
-		}
-
-		loserTree[0] = tempWinner;
+		loserTreeUp(loserTree, loserTreeStatus, layer);
 	}
 
 	if (currentOutputBuffer == 1)
@@ -609,6 +513,7 @@ void segmentInitial(string inFileName, int inputBufferSize, int outputBufferSize
 	disk.push(run);
 }
 
+// 外排二路归并函数
 vector<int> EXT_merge_sort(vector<int>& tempDisk1, vector<int>& tempDisk2, int inputBufferSize, int outputBufferSize)
 {
 	vector<int> outputDisk;
@@ -669,6 +574,7 @@ vector<int> EXT_merge_sort(vector<int>& tempDisk1, vector<int>& tempDisk2, int i
 	return outputDisk;
 }
 
+// 外排多路归并函数
 vector<int> EXT_K_way_merge_sort(vector<vector<int>>& tempDisk1, int inputBufferSize, int outputBufferSize)
 {
 	vector<int> inputBuffer1;
@@ -690,6 +596,7 @@ vector<int> EXT_K_way_merge_sort(vector<vector<int>>& tempDisk1, int inputBuffer
 
 	// 败者树的初始化
 	const int N = 16; // 败者树的大小
+	const int layer = 4; // 败者树层数
 	int loserTree[N] = { 0 }; // 败者树
 	bool loserTreeStatus[N] = { }; // 败者树节点状态
 	for (int i = 0; i < N; i++)
@@ -761,32 +668,7 @@ vector<int> EXT_K_way_merge_sort(vector<vector<int>>& tempDisk1, int inputBuffer
 		}
 
 		// 更新败者树
-		int tempWinner = loserTree[0];
-
-		for (int i = 0; i < 3; i++) {
-			int parent = tempWinner / 2;
-
-			for (int j = 0; j < i; j++) {
-				parent /= 2;
-			}
-
-			if (loserTreeStatus[loserTree[parent]] == false) {
-				if (loserTreeStatus[tempWinner] == false) {
-					// 不用操作
-				}
-				else {
-					// tempWinner自动上升，也不用操作
-				}
-			}
-			else if (loserTree[tempWinner] > loserTree[loserTree[parent]] || loserTreeStatus[tempWinner] == false) {
-				// loser更新
-				int temp = tempWinner;
-				tempWinner = loserTree[parent];
-				loserTree[parent] = temp;
-			}
-		}
-
-		loserTree[0] = tempWinner;
+		loserTreeUp(loserTree, loserTreeStatus, layer);
 	}
 
 	if (currentOutputBuffer == 1)
@@ -811,6 +693,7 @@ vector<int> EXT_K_way_merge_sort(vector<vector<int>>& tempDisk1, int inputBuffer
 	return run;
 }
 
+// 外排函数
 void external_sort(string inFileName, int inputBufferSize, priority_queue<vector<int>, vector<vector<int>>, Compare>& disk, string outFileName, int outputBufferSize)
 {
 	segmentInitial(inFileName, inputBufferSize, outputBufferSize, disk, outFileName);
@@ -851,7 +734,7 @@ void external_sort(string inFileName, int inputBufferSize, priority_queue<vector
 
 			disk.push(outputDisk);
 		}
-		else
+		else // 最后剩余的不满八路的顺串用二路归并实现
 		{
 			vector<int> tempDisk1 = disk.top();
 			disk.pop();
@@ -881,6 +764,7 @@ void external_sort(string inFileName, int inputBufferSize, priority_queue<vector
 	fileOut.close();
 }
 
+// 主函数
 int main()
 {
 	int N = 500; // 对500个整数进行外排
