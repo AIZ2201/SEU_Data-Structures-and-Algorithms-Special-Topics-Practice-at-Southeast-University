@@ -587,7 +587,7 @@ void external_sort(string inFileName, int inputBufferSize, priority_queue<vector
 
 int main()
 {
-	int N = 500; // 对500个整数进行外排
+	int N = 5000; // 对500个整数进行外排
 
 	string inFileName = "input.txt"; // 用txt文件模拟磁盘
 	priority_queue<vector<int>, vector<vector<int>>, Compare> disk; // 用vector队列模拟磁盘
@@ -600,7 +600,7 @@ int main()
 	int outputBufferSize = 20;
 	int inputBufferSize = 10;
 
-	// data_generation(N, inFileName);
+	data_generation(N, inFileName);
 
 	external_sort(inFileName, inputBufferSize, disk, outFileName, outputBufferSize);
 
