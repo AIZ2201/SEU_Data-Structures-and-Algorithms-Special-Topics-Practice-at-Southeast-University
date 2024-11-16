@@ -1,0 +1,41 @@
+Experiment1:.
+│  Experiment1.sln
+│
+├─Experiment1
+│  │  Experiment1.vcxproj
+│  │  Experiment1.vcxproj.filters
+│  │  Experiment1.vcxproj.user
+│  │  external_sorting1.cpp
+│  │
+│  └─x64
+├─Experiment2
+│  │  Experiment2.vcxproj
+│  │  Experiment2.vcxproj.filters
+│  │  Experiment2.vcxproj.user
+│  │  external_sorting2.cpp
+│  │
+│  └─x64
+├─Experiment3
+│  │  Experiment3.vcxproj
+│  │  Experiment3.vcxproj.filters
+│  │  Experiment3.vcxproj.user
+│  │  external_sorting3.cpp
+│  │
+│  └─x64
+├─Experiment4
+│  │  Experiment4.vcxproj
+│  │  Experiment4.vcxproj.filters
+│  │  Experiment4.vcxproj.user
+│  │  external_sorting_test.cpp
+│  │
+│  └─x64
+└─x64
+    └─Debug
+            Experiment1.exe
+            Experiment1.pdb
+            Experiment2.exe
+            Experiment2.pdb
+            Experiment3.exe
+            Experiment3.pdb
+            Experiment4.exe
+            Experiment4.pdb

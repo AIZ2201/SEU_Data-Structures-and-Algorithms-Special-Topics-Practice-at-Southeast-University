@@ -1,0 +1,127 @@
+Experiment1:.
+│  Experiment1.sln
+│  input.txt
+│
+├─Experiment1
+│  │  Experiment1.vcxproj
+│  │  Experiment1.vcxproj.filters
+│  │  Experiment1.vcxproj.user
+│  │  external_sorting1.cpp
+│  │  input.txt
+│  │  output.txt
+│  │
+│  └─x64
+│      └─Debug
+│          │  Experiment1.exe.recipe
+│          │  Experiment1.ilk
+│          │  Experiment1.log
+│          │  external_sorting1.obj
+│          │  vc143.idb
+│          │  vc143.pdb
+│          │
+│          └─Experiment1.tlog
+│                  CL.command.1.tlog
+│                  Cl.items.tlog
+│                  CL.read.1.tlog
+│                  CL.write.1.tlog
+│                  Experiment1.lastbuildstate
+│                  link.command.1.tlog
+│                  link.read.1.tlog
+│                  link.write.1.tlog
+│
+├─Experiment2
+│  │  Experiment2.vcxproj
+│  │  Experiment2.vcxproj.filters
+│  │  Experiment2.vcxproj.user
+│  │  external_sorting2.cpp
+│  │  input.txt
+│  │  output.txt
+│  │
+│  └─x64
+│      └─Debug
+│          │  Experiment2.exe.recipe
+│          │  Experiment2.ilk
+│          │  Experiment2.log
+│          │  external_sorting2.obj
+│          │  vc143.idb
+│          │  vc143.pdb
+│          │
+│          └─Experiment2.tlog
+│                  CL.command.1.tlog
+│                  Cl.items.tlog
+│                  CL.read.1.tlog
+│                  CL.write.1.tlog
+│                  Experiment2.lastbuildstate
+│                  link.command.1.tlog
+│                  link.read.1.tlog
+│                  link.write.1.tlog
+│
+├─Experiment3
+│  │  Experiment3.vcxproj
+│  │  Experiment3.vcxproj.filters
+│  │  Experiment3.vcxproj.user
+│  │  external_sorting3.cpp
+│  │  input.txt
+│  │  output.txt
+│  │
+│  └─x64
+│      └─Debug
+│          │  Experiment3.exe.recipe
+│          │  Experiment3.ilk
+│          │  Experiment3.log
+│          │  external_sorting3.obj
+│          │  vc143.idb
+│          │  vc143.pdb
+│          │
+│          └─Experiment3.tlog
+│                  CL.command.1.tlog
+│                  Cl.items.tlog
+│                  CL.read.1.tlog
+│                  CL.write.1.tlog
+│                  Experiment3.lastbuildstate
+│                  link.command.1.tlog
+│                  link.read.1.tlog
+│                  link.write.1.tlog
+│
+├─Experiment4
+│  │  Experiment4.vcxproj
+│  │  Experiment4.vcxproj.filters
+│  │  Experiment4.vcxproj.user
+│  │  external_sorting_test.cpp
+│  │  input.txt
+│  │  input_0.txt
+│  │  output.txt
+│  │  val.txt
+│  │  val（首个值从50替换成0）.txt
+│  │
+│  └─x64
+│      └─Debug
+│          │  Experiment4.exe.recipe
+│          │  Experiment4.ilk
+│          │  Experiment4.log
+│          │  external_sorting4.obj
+│          │  external_sorting_test.obj
+│          │  tempTest.obj
+│          │  vc143.idb
+│          │  vc143.pdb
+│          │
+│          └─Experiment4.tlog
+│                  CL.command.1.tlog
+│                  Cl.items.tlog
+│                  CL.read.1.tlog
+│                  CL.write.1.tlog
+│                  Experiment4.lastbuildstate
+│                  link.command.1.tlog
+│                  link.read.1.tlog
+│                  link.write.1.tlog
+│
+└─x64
+    └─Debug
+            Experiment1.exe
+            Experiment1.pdb
+            Experiment2.exe
+            Experiment2.pdb
+            Experiment3.exe
+            Experiment3.pdb
+            Experiment4.exe
+            Experiment4.pdb
